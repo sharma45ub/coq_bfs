@@ -27,6 +27,7 @@ follows:
 * ...
 
 **Technologies Used**
+
 *Programming Language: Coq proof assitant*
 
-*Ide: Proof general with emacs*
+*IDE: Proof general with emacs*
