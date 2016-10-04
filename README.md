@@ -16,3 +16,16 @@ In this project we intend to prove some very intersting proofs regarding breadth
 We will be using Coq as our proof assistant. We have many interesting proofs regarding graphs which are as 
 follows:
 
+* Decrease Length (On each iteration of BFS edges are removed for successful termination of algorithm.)
+* Has Path
+* Finding Path Length
+* List All Nodes
+* Sorted Insert
+* Extract Min
+* Finding Head
+* Extract Min
+* ...
+
+**Technologies Used**
+*Programming Language: Coq proof assitant*
+*Ide: Proof general with emacs*
