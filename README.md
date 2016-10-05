@@ -28,6 +28,6 @@ follows:
 
 **Technologies Used**
 
-*Programming Language: Coq proof assitant*
+*Programming Language: Coq proof assistant*
 
 *IDE: Proof general with emacs*
