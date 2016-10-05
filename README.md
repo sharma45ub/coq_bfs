@@ -7,7 +7,7 @@ Proofs on Breadth First Traversal of graphs using Coq.
 
 *Professor: Gaboardi, Marco*
 
-*Students: Arshad Zaidi, Anuj Sharma*
+*Students: Syed Mohammed Arshad Zaidi, Anuj Sharma*
 
 *Course: CSE 605 Advanced Programming Languages*
 
