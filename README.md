@@ -2,7 +2,7 @@
 Proofs on Breadth First Traversal of graphs using Coq.
 
 ### Group Information
-
+***
 *School: University at Buffalo*
 
 *Professor: Gaboardi, Marco*
