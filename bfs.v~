@@ -1,3 +1,0 @@
-(*Authors: Arshad Zaidi, Anuj Sharma*)
-
-Require Import Coq.List.List.
