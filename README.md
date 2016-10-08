@@ -32,7 +32,6 @@ follows:
 *Programming Language: Coq proof assistant*
 
 *IDE: Proof general with emacs*
-asas
 
 
 
