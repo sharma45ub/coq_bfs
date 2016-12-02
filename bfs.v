@@ -4,6 +4,8 @@ Require Import Coq.Lists.List.
 Require Import Coq.omega.Omega.
 
 Notation "( x , y )" := (pair x y).
+Notation "[ ]" := nil.
+
 (* This is representation of single node of a graph *)
 Inductive node :=
  Node : nat -> node.
@@ -18,7 +20,7 @@ Definition nodes_equal (x y:node): bool:=
  Definition search_node (ps : list (node * (list node)) ) (x:node): option (list node) :=
  match find (fun p => nodes_equal x (fst p)) ps with
  | Some p => Some (snd p)
- | None => None
+ | None => Some []
  end.
  
  (* Wrapper function on search_node for searching node in a given graph. *)
@@ -287,7 +289,7 @@ Qed.
              | (x,y) => [x] ++ y ++ (graph_to_list t)
              end
    end.
-
+*)
  Fixpoint node_in_list (l: list node) (n: node) : bool :=
    match l with
    | [] => false
@@ -297,10 +299,7 @@ Qed.
              end
    end.
 
- Compute remove_node_list (graph_to_list customGraph) (Node 3).
- Compute node_in_list (graph_to_list customGraph) (Node 21).
- Check [Node 1] ++ [(Node 2); (Node 3)].
-
+ 
  Fixpoint unique_list (r: list node) (l: list node) : list node :=
    match l with
    | [] => r
@@ -309,7 +308,7 @@ Qed.
              | true => unique_list r t
              end
    end.
-
+(*
  Compute graph_to_list customGraph.
  Compute unique_list [] (graph_to_list customGraph).
   
@@ -352,7 +351,7 @@ Inductive bfs_ind : graph -> list node -> Prop :=
 
   *)
  
-Definition inputGraph := [(Node 1, [Node 2; Node 3]);(Node 2, [Node 4;Node 5]); (Node 3, [Node 6; Node 7]);(Node 4, [Node 8; Node 9])].
+Definition inputGraph := [(Node 1, [Node 2; Node 3]);(Node 2, [Node 3;Node 4]); (Node 3, [Node 4; Node 5]);(Node 4, [Node 5; Node 6]);(Node 5, [Node 6;Node 7]); (Node 6, [Node 7; Node 8]); (Node 7,[Node 8; Node 9]); (Node 8,[Node 9;Node 10]); (Node 9,[]); (Node 10,[])].
 
 Definition totalNodes := (ANum 4).
 
@@ -401,10 +400,10 @@ Definition pop (l:list node): option (list node) :=
 
 Definition bfs_iteration  (graph : list (node * list node)) (current_stack : list node) : option (list node):=
   match get current_stack with 
- | None => None                                  
+ | None => Some []                                  
  | Some n => match search_node graph n with
-               |None => None
-               |Some l => Some ([n]++(tl current_stack) ++ l)
+               |None => Some []
+               |Some l => Some (unique_list [] ([n]++(tl current_stack) ++ l))
              end
  end.
 
@@ -413,15 +412,15 @@ Fixpoint bfs_aux (graph : list (node * (list node))) (current_stack:list node):
    match graph with
    | [] => Some []
    | [x] => Some [fst x] 
-   | x::xs  => match (bfs_iteration xs (snd x)) with
-               |None => None
+   | x::xs  => match (bfs_iteration xs (current_stack ++ (snd x))) with
+               |None => Some []
                |Some z =>
                 match (pop z) with
-                |None => None
+                |None => Some []
                 |Some p => match (bfs_aux xs p) with
-                           |None => None
+                           |None => Some []
                            |Some r  =>  match get z with
-                                        |None => None
+                                        |None => Some []
                                         |Some w => Some ([w] ++ r)
                                                         end
                            end
@@ -434,7 +433,7 @@ Definition bfs (graph : list (node * (list node))) : option (list node) :=
   match graph with
    | [] => Some []
    | x::xs =>  match (bfs_aux xs (snd x)) with
-               |None => None
+               |None => Some []
                |Some r => Some ((fst x) :: r)
                end
 end.
@@ -451,6 +450,7 @@ Compute (bfs g3).
 Definition g4: list (node * list node) := [(Node 1, [Node 2; Node 3]);(Node 2, []) ;(Node 3,[])].
 Compute (bfs g4).
 
+Definition g5: list (node * list node) := [(Node 1, [Node 2; Node 3]);(Node 2, [Node 3;Node 4]) ;(Node 3,[Node 4; Node 5]); (Node 4, []); (Node 5, [])].
+Compute bfs g5.
 
-Compute (bfs inputGraph).
-  
+Compute bfs inputGraph.  
