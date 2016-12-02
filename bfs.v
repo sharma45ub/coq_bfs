@@ -3,32 +3,26 @@
 Require Import Coq.Lists.List.
 Require Import Coq.omega.Omega.
 
+Notation "( x , y )" := (pair x y).
 (* This is representation of single node of a graph *)
 Inductive node :=
  Node : nat -> node.
 
-(* This is representation of graph *)
-Definition graph :=
- list (node * list node).
+
 
 (* Raw function to check equality of nodes. *)
-Definition are_nodes_equal :
-  forall (x y:node),
-    {x = y} + {x <> y}. repeat (decide equality). Defined.
-
-(* Wrapper function on are_nodes_equal to verify equality of nodes. *)
-Definition nodes_equal a b :=
-  if are_nodes_equal a b then true else false.
+Definition nodes_equal (x y:node): bool:=
+    match x with |Node a => (match y with |Node b => beq_nat a b end) end. 
 
  (* Raw function to search a given node in a given graph. *)
- Definition search_node {A:Type} (ps:list(node*A)) (x:node) :=
+ Definition search_node (ps : list (node * (list node)) ) (x:node): option (list node) :=
  match find (fun p => nodes_equal x (fst p)) ps with
  | Some p => Some (snd p)
  | None => None
  end.
  
  (* Wrapper function on search_node for searching node in a given graph. *)
- Definition is_node_present {A:Type} (ps:list(node*A)) (default:A) (x:node) :=
+ Definition is_node_present (ps:list(node* (list node))) (default:list node) (x:node) : list node :=
  match search_node ps x with
  | None => default
  | Some y => y
@@ -39,7 +33,7 @@ Definition nodes_equal a b :=
  of [pair x y].  We can tell Coq to allow this with a [Notation]
  declaration. *)
  
- Notation "( x , y )" := (pair x y).
+
  (** As with pairs, it is more convenient to write lists in
  familiar programming notation.  The following declarations
  allow us to use [::] as an infix [cons] operator and square
@@ -224,7 +218,7 @@ Inductive ceval : com -> state -> state -> Prop :=
   where "c1 '/' st '\\' st'" := (ceval c1 st st').
 
 
-Definition X : id := Id 5.
+Definition X : id := Id 0.
 Definition Y : id := Id 1.
 Definition Z : id := Id 2.
 
@@ -286,7 +280,7 @@ Qed.
 
  (* Compute bfs customGraph [Node 1].*)
 
- Fixpoint graph_to_list (g: list(node*(list node))) : list node :=
+ (*Fixpoint graph_to_list (g: list(node*(list node))) : list node :=
    match g with
    | [] => []
    | h::t => match h with
@@ -318,16 +312,18 @@ Qed.
 
  Compute graph_to_list customGraph.
  Compute unique_list [] (graph_to_list customGraph).
-
+  
+ 
  Definition removed_one := remove are_nodes_equal (Node 1) (unique_list [] (graph_to_list customGraph)).
  Definition removed_two := remove are_nodes_equal (Node 2) removed_one.
  Compute removed_two.
  Definition removed_three := remove are_nodes_equal (Node 3) removed_two.
  Definition removed_four := remove are_nodes_equal (Node 4) removed_three.
  Compute removed_four.
+*)
 
  (* Following lemma will state for removal of nodes in each iteration of bfs which results in termination of bfs traversal. *)
- Lemma bfs_iteration_custom : forall nd grph_nodes,
+ (* Lemma bfs_iteration_custom : forall nd grph_nodes,
   length grph_nodes >= length (remove are_nodes_equal nd grph_nodes) /\
   (In nd grph_nodes -> length grph_nodes > length (remove are_nodes_equal nd grph_nodes)).
 Proof.
@@ -354,13 +350,17 @@ Inductive bfs_ind : graph -> list node -> Prop :=
 | bfs_single : forall n, bfs_ind [(n,[])] [n]
 | bfs_list_s: forall g n l l' n', bfs_ind [(n,l');g] l -> bfs_ind [(n',[n]);(n,l');g] (n':: l).
 
+  *)
+ 
 Definition inputGraph := [(Node 1, [Node 2; Node 3]);(Node 2, [Node 4;Node 5]); (Node 3, [Node 6; Node 7]);(Node 4, [Node 8; Node 9])].
+
+Definition totalNodes := (ANum 4).
 
 (* This will hold all vertices of current iteration. *)
 (* Initializing it with starting vertex. *)
-Definition current_stack := [Node 1].
+(*Definition current_stack := [Node 1].*)
 
-(* Function to check if our node list is empty or not. *)
+(* Function to check if our node list is empty or not. 
 Definition not_empty (l: list node) : bexp :=
   match l with
     |[] => BTrue
@@ -372,47 +372,85 @@ Definition get_next_node :=
   | [] => []
   | h::t => [h]
   end.
+ *)
 
-Definition get_next_node_num :=
-  match current_stack with
-  | [] => (ANum 0)
-  | h::t => match h with
-            | (Node x) => (ANum x)
+Fixpoint get_next_node_num_iter (n: nat) (l : list node): option (nat) :=
+  match n with
+   | O => match l with
+            | [] => None
+            | h::t => match h with | (Node x) => Some x end
+          end
+   | S m => match l with
+            | [] => None
+            | h::t => get_next_node_num_iter m t            
             end
   end.
 
-Definition process_iteration (l: list node) : aexp :=
-  get_next_node_num.
-
-Definition pop :=
-  match current_stack with
-  | [] => []
-  | h::t => t
+Definition get (l:list node): option node :=
+  match l with
+  |[] => None
+  |x::xs => Some x
+  end.
+                                
+Definition pop (l:list node): option (list node) :=
+  match l with
+  |[] => None
+  |x::xs => Some xs
   end.
 
-Definition get_adj_nodes (x: aexp) : list(node) :=
-  match x with
-  | (ANum y) => (is_node_present inputGraph [] (Node y))
-  | _        => []
-  end.
 
-Definition bfs_iteration :=
-  Y ::= process_iteration(current_stack ++ get_adj_nodes(get_next_node_num)).
+Definition bfs_iteration  (graph : list (node * list node)) (current_stack : list node) : option (list node):=
+  match get current_stack with 
+ | None => None                                  
+ | Some n => match search_node graph n with
+               |None => None
+               |Some l => Some ([n]++(tl current_stack) ++ l)
+             end
+ end.
 
-Definition bfs : com :=
-    Y ::= ANum 1;;
-    
-    WHILE BNot (BEq (AId Y) (ANum 0)) DO
-    bfs_iteration
-    END.
+Fixpoint bfs_aux (graph : list (node * (list node))) (current_stack:list node):
+  option (list node) :=
+   match graph with
+   | [] => Some []
+   | [x] => Some [fst x] 
+   | x::xs  => match (bfs_iteration xs (snd x)) with
+               |None => None
+               |Some z =>
+                match (pop z) with
+                |None => None
+                |Some p => match (bfs_aux xs p) with
+                           |None => None
+                           |Some r  =>  match get z with
+                                        |None => None
+                                        |Some w => Some ([w] ++ r)
+                                                        end
+                           end
+                end
+               end
+   end.
+   
 
-Example test_bfs :
-  bfs / empty_state \\ (t_update(t_update empty_state Y 1)Y 1).
-Proof.
-  unfold bfs.
-  apply E_Seq with (t_update empty_state Y 1).
-  - apply E_Ass. simpl. reflexivity.
-  - apply E_WhileLoop with (t_update(t_update empty_state Y 1)Y 1).
-    + simpl. reflexivity.
-    + unfold bfs_iteration. apply E_Ass. simpl. reflexivity.
-    + (* this will be done once our current_stack start reducing *)
+Definition bfs (graph : list (node * (list node))) : option (list node) :=
+  match graph with
+   | [] => Some []
+   | x::xs =>  match (bfs_aux xs (snd x)) with
+               |None => None
+               |Some r => Some ((fst x) :: r)
+               end
+end.
+
+Definition g1 := [(Node 1, [Node 2; Node 3]);(Node 2, [Node 3;Node 4]); (Node 3, []);(Node 4, [])].
+Compute (bfs g1).
+
+Definition g2: list (node * list node) := [(Node 1, [])].
+Compute (bfs g2).
+
+Definition g3: list (node * list node) := [(Node 1, [Node 2]);(Node 2, []) ].
+Compute (bfs g3).
+
+Definition g4: list (node * list node) := [(Node 1, [Node 2; Node 3]);(Node 2, []) ;(Node 3,[])].
+Compute (bfs g4).
+
+
+Compute (bfs inputGraph).
+  
