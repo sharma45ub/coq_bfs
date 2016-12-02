@@ -277,8 +277,7 @@ Proof.
           { apply E_WhileEnd. simpl. reflexivity. } }
 Qed.
 
-            
- Compute is_node_present customGraph [] (Node 4).
+Compute is_node_present customGraph [] (Node 4).
 
  (* Compute bfs customGraph [Node 1].*)
 
