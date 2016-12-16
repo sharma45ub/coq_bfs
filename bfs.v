@@ -376,4 +376,86 @@ Compute (bfs g4).
 Definition g5: list (node * list node) := [(Node 1, [Node 2; Node 3]);(Node 2, [Node 3;Node 4]) ;(Node 3,[Node 4; Node 5]); (Node 4, []); (Node 5, [])].
 Compute bfs g5.
 
-Compute bfs inputGraph.  
+Definition empty_graph: list (node * list node) := [].
+
+Compute bfs inputGraph.
+
+Theorem bfs_computation_graph1 :
+  bfs inputGraph = Some [Node 1; Node 2; Node 3; Node 4; Node 5; Node 6; Node 7; Node 8; Node 9; Node 10].
+Proof.
+  simpl. reflexivity. Qed.
+
+
+Theorem bfs_computation_graph2 :
+  bfs g1 = Some [Node 1; Node 2; Node 3; Node 4].
+Proof.
+  simpl. reflexivity. Qed.
+
+
+Theorem bfs_computation_graph3 :
+  bfs g5 = Some [Node 1; Node 2; Node 3; Node 4; Node 5].
+Proof.
+  simpl. reflexivity. Qed.
+
+
+Theorem bfs_computation_empty_graph :
+  bfs empty_graph = None.
+Proof.
+  simpl. reflexivity. Qed.
+
+(*Function to convert graph to list. *)
+Fixpoint convert_graph_to_list(g: list (node * list node)) :=
+  match g with
+  | [] => []
+  | h::t => match h with
+            | (x,y) => x::convert_graph_to_list t
+            end
+  end.
+
+Definition remove_option_graph (g: option(list node)) :=
+  match g with
+  | None => []
+  | Some x => x
+  end.
+
+
+Theorem remove_option_graph_assoc (a: node*(list node))(g: list (node * (list node)))(n: nat):
+  In (Node n) (remove_option_graph (bfs (a :: g))) = In (Node n) (remove_option_graph (bfs ([a]))) \/ In (Node n) (remove_option_graph (bfs (g))).
+Proof.
+Admitted.
+
+Theorem convert_assoc (a: node*(list node))(g: list (node * (list node))) : convert_graph_to_list (a :: g) = (convert_graph_to_list [a]) ++ (convert_graph_to_list g).
+Proof.
+Admitted.
+
+Theorem convert_single (a: node*(list node)) :
+  convert_graph_to_list [a] = [fst a].
+Proof.
+  Admitted.
+
+Theorem remove_assoc (a: node * (list node)) (g: list (node * (list node))) : remove_option_graph (bfs (a :: g)) = remove_option_graph(bfs [a]) ++ remove_option_graph(bfs g).
+Proof.
+  Admitted.
+
+(* Theorem to prove bfs conversion of any graph g is equivalent to all its node traversed in order of bfs. *)
+Theorem bfs_comprehensive (n: node) (g: list (node * list node)) :
+  convert_graph_to_list g = remove_option_graph (bfs g).
+Proof.
+  induction g.
+  - simpl. reflexivity.
+  - rewrite convert_assoc. rewrite remove_assoc. rewrite <- IHg. 
+    rewrite convert_single. simpl. reflexivity.
+Qed.
+
+(* Theorem to prove for every node n in graph it is also present in bfs of graph *)
+Theorem bfs_comprehensive2 (n: node)(g: list (node * list node)) :
+  In n (convert_graph_to_list g) -> In n (remove_option_graph (bfs g)).
+Proof.
+  intros. induction n.
+  - induction g.
+    + simpl in H. inversion H.
+    + rewrite remove_assoc. simpl.  rewrite convert_assoc in H.
+      rewrite convert_single in H. simpl in H. destruct H.
+      * left. apply H.
+      * right. apply IHg. apply H.
+Qed.
