@@ -448,7 +448,7 @@ Proof.
 Qed.
 
 (* Theorem to prove for every node n in graph it is also present in bfs of graph *)
-Theorem bfs_comprehensive2 (n: node)(g: list (node * list node)) :
+Theorem bfs_node_present (n: node)(g: list (node * list node)) :
   In n (convert_graph_to_list g) -> In n (remove_option_graph (bfs g)).
 Proof.
   intros. induction n.
